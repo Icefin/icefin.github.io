@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>@poit4poit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="@poit4poit — 3D 포트폴리오, UTS/URP/HDRP, 하드서페이스·캐릭터 모델링." />
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://poit4poit.github.io/" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="/logo/poit4poit.png" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="poit4poit" />
+  <meta property="og:title" content="poit4poit | 3D Artist" />
+  <meta property="og:description" content="poit4poit 포트폴리오" />
+  <meta property="og:url" content="https://poit4poit.github.io/" />
+  <meta property="og:image" content="https://poit4poit.github.io/logo/poit4poit.png" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" as="style" onload="this.rel='stylesheet'"
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap"/>
+
+  <!-- Tailwind (optional) -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+  <style>
+    html{ scroll-behavior:smooth; scrollbar-gutter: stable both-edges; }
+    body{
+      font-family:"Noto Sans KR","Noto Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+      color:#111;margin:0;background:#fafafa;overflow-y:scroll;
+    }
+
+    /* Topbar */
+    .topbar{position:fixed;top:0;left:0;right:0;height:56px;background:rgba(255,255,255,.65);backdrop-filter:blur(10px);border-bottom:1px solid #e5e7eb;z-index:70;display:flex;align-items:center;gap:12px;padding:0 12px}
+    .topbar .left,.topbar .center,.topbar .right{display:flex;align-items:center}
+    .topbar .left{width:84px;min-width:84px}
+    .topbar .center{flex:1;justify-content:center}
+    .topbar .right{width:84px;min-width:84px;justify-content:flex-end}
+    .brand{font-weight:800}
+    .topbar img.logo{height:30px;width:auto;display:block}
+    .hamburger{cursor:pointer;width:26px;height:18px;display:flex;flex-direction:column;justify-content:space-between}
+    .hamburger span{display:block;height:3px;background:#111;border-radius:2px}
+
+    /* Layout */
+    .layout{display:flex;min-height:100vh;background:#fafafa;padding-top:56px}
+    .sidebar{width:240px;min-height:calc(100vh - 56px);position:fixed;top:56px;left:0;background:#fff;border-right:1px solid #e5e7eb;padding:1.5rem;overflow-y:auto;text-align:center;z-index:50}
+
+    /* Sidebar profile */
+    .profile{display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .profile-photo{display:inline-block;transition:transform .25s ease}
+    .profile-photo:hover img{transform:scale(1.05)}
+    .profile-name{display:inline-block;transition:color .25s ease}
+    .profile-name:hover{color:#a2cffe;cursor:pointer}
+    .sidebar img{border-radius:8px;width:90px;height:90px;object-fit:contain;margin:0 auto 10px;transition:transform .25s ease}
+    .sidebar h1{font-weight:800;font-size:1.2rem;margin:0 0 .5rem 0;line-height:1;}
+    .sidebar p{color:#555;margin-bottom:.8rem;font-size:.85rem;line-height:1.4}
+
+    .social-icons {display:flex;justify-content:center;gap:12px;margin:8px 0 16px;}
+    .social-icons img {width:26px;height:26px;object-fit:contain;display:block;}
+
+    .sidebar nav a{display:block;font-size:.9rem;color:#222;margin:.35rem 0;padding:.15rem 0;transition:color .2s}
+    .sidebar nav a:hover{color:#000;text-decoration:underline}
+
+    .content{margin-left:240px;flex:1;padding:2rem 6rem;padding-top:32px}
+
+    /* Grid */
+    .grid{display:grid;gap:2rem}
+    @media(min-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media(min-width:1024px){.grid{grid-template-columns:repeat(3,1fr)}}
+
+    .grid-card{display:block;border:1px solid #d1d5db;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.05);transition:box-shadow .2s,transform .15s}
+    .grid-card:hover{box-shadow:0 3px 6px rgba(0,0,0,.12);transform:translateY(-2px)}
+
+    .thumb-wrap{aspect-ratio:16/9;width:100%;overflow:hidden;background:#f3f4f6}
+    .thumb{width:100%;height:100%;display:block;object-fit:cover}
+    .card-title{padding:10px 12px 12px;font-weight:700;font-size:.96rem;line-height:1.25;color:#0f172a;text-align:left}
+
+    /* Detail */
+    [data-project]{display:none}
+    h2.section-title{font-size:1.4rem;font-weight:800;margin-bottom:1rem}
+    .fade-img{opacity:0;transition:opacity .4s}
+    .fade-img.loaded{opacity:1}
+    .project-img{width:100%;height:auto;object-fit:contain;border-radius:6px;margin-bottom:1rem}
+    .back-btn{display:inline-block;margin-bottom:1rem;padding:.4rem .8rem;font-size:.85rem;border:1px solid #d1d5db;border-radius:4px;background:#fff;cursor:pointer;transition:background .2s}
+    .back-btn:hover{background:#f3f4f6}
+
+    /* Mobile */
+    .mobile-menu{display:none;position:fixed;top:56px;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);z-index:65;padding:1.5rem;overflow-y:auto}
+    .mobile-menu a{display:block;padding:.7rem 0;color:#222;font-weight:700;text-align:center}
+
+    .mm-inner{max-width:520px;margin:0 auto}
+    .mm-profile{display:flex;flex-direction:column;align-items:center;margin-bottom:1rem}
+    .mm-avatar{width:80px;height:80px;border-radius:8px;object-fit:contain;margin-bottom:.5rem}
+    .mm-name{font-weight:800;font-size:1.1rem}
+    .mh-role{font-size:.85rem;color:#555}
+    .mm-social{display:flex;justify-content:center;gap:14px;margin:1rem 0}
+    .mm-social img{width:28px;height:28px;display:block}
+
+    .mobile-hero{display:none;margin:0 auto 1rem;max-width:560px;text-align:center}
+    .mh-avatar{width:72px;height:72px;border-radius:8px;object-fit:contain;margin:0 auto 8px}
+    .mh-name{font-weight:800}
+    .mh-role{font-size:.9rem;color:#555;margin-top:2px}
+    .mh-email{font-size:.85rem;color:#333;margin-top:2px}
+    .mh-social{display:flex;justify-content:center;gap:14px;margin-top:10px}
+    .mh-social img{width:24px;height:24px;display:block}
+
+    @media(max-width:768px){
+      .sidebar{display:none}
+      .content{margin-left:0;padding:1.25rem;padding-top:76px}
+      .brand{font-size:1rem}
+      .hamburger{display:flex}
+      .mobile-hero{display:block}
+    }
+    @media(min-width:769px){
+      .hamburger{display:none}
+    }
+
+    /* 요청: WORK 글자/링크 노출 제거 */
+    .sidebar nav a[data-nav="work"]{display:none!important}
+    #work .section-title{display:none!important}
+  </style>
+</head>
+<body>
+  <!-- Top Glass Bar -->
+  <div class="topbar">
+    <div class="left"><a class="brand" href="/" data-nav="work">@poit4poit</a></div>
+    <div class="center">
+      <a href="/" data-nav="work" aria-label="Home">
+        <img class="logo" src="https://poit4poit.github.io/logo/poit4poit.png" alt="Logo"/>
+      </a>
+    </div>
+    <div class="right">
+      <div class="hamburger" id="hamburger" aria-label="Open menu" aria-controls="mobileMenu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모바일 메뉴 -->
+  <div id="mobileMenu" class="mobile-menu" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="mm-inner">
+      <div class="mm-profile">
+        <img class="mm-avatar" src="/Image/download20250903083827.png" alt="Profile photo">
+        <div class="mm-name">poit4poit</div>
+        <div class="mh-role">Kim ChaeYeon</div>
+        <div class="mh-email">coraline0120@gmail.com</div>
+      </div>
+      <div class="mm-social" aria-label="Social links">
+        <a href="https://www.artstation.com/poit4poit" target="_blank" aria-label="ArtStation">
+          <img src="/logo/Logo (4).png" alt="ArtStation">
+        </a>
+      </div>
+      <nav class="mm-nav">
+        <a href="/" data-nav="work">WORK</a>
+        <a href="#Saki" data-nav="Saki">Saki</a>
+        <a href="#miyu" data-nav="miyu">Miyu</a>
+        <a href="#Wriothesley" data-nav="Wriothesley">Wriothesley</a>
+        <a href="#PostDochi" data-nav="PostDochi">PostDochi</a>
+        <a href="#Axe" data-nav="Axe">Axe</a>
+        <a href="#DivingDeeper" data-nav="DivingDeeper">Diving Deeper</a>
+        <a href="#Skull" data-nav="Skull">Skull</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="profile">
+        <a href="/" data-nav="work" class="profile-photo">
+          <img src="/Image/download20250903083827.png" alt="Profile photo" />
+        </a>
+        <a href="/" data-nav="work" class="profile-name">
+          <h1>poit4poit</h1>
+        </a>
+        <p>Kim ChaeYeon<br/>coraline0120@gmail.com</p>
+      </div>
+
+      <div class="social-icons" aria-label="Social links">
+        <a href="https://www.artstation.com/poit4poit" target="_blank"><img src="/logo/Logo (4).png" alt="ArtStation" /></a>
+      </div>
+
+      <nav>
+        <a href="#Saki" data-nav="Saki">Saki</a>
+        <a href="#miyu" data-nav="miyu">Miyu</a>
+        <a href="#Wriothesley" data-nav="Wriothesley">Wriothesley</a>
+        <a href="#PostDochi" data-nav="PostDochi">PostDochi</a>
+        <a href="#Axe" data-nav="Axe">Axe</a>
+        <a href="#DivingDeeper" data-nav="DivingDeeper">Diving Deeper</a>
+        <a href="#Skull" data-nav="Skull">Skull</a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content">
+      <!-- 모바일 메인 히어로 -->
+      <section class="mobile-hero" aria-label="Profile">
+        <img class="mh-avatar" src="/Image/download20250903083827.png" alt="Profile photo">
+        <div class="mh-name">poit4poit</div>
+        <div class="mh-role">Kim ChaeYeon</div>
+        <div class="mh-email">coraline0120@gmail.com</div>
+        <div class="mh-social" aria-label="Social links">
+          <a href="https://www.instagram.com/poit4poit" target="_blank"><img src="/logo/Logo (1).png" alt="Instagram"></a>
+          <a href="https://x.com/poit4poit" target="_blank"><img src="/logo/Logo (2).png" alt="X"></a>
+          <a href="https://www.artstation.com/poit4poit" target="_blank"><img src="/logo/Logo (4).png" alt="ArtStation"></a>
+        </div>
+      </section>
+
+      <!-- Work grid -->
+      <section id="work">
+        <h2 class="section-title">WORK</h2>
+        <div class="grid">
+          <button class="grid-card" data-open="Saki" aria-label="Open Saki">
+            <div class="thumb-wrap">
+              <img class="thumb" src="/Image_Saki/Saki3_KimChaeYeon.png" alt="Saki thumbnail" loading="lazy" />
+            </div>
+            <div class="card-title">Saki</div>
+          </button>
+
+          <button class="grid-card" data-open="miyu" aria-label="Open Miyu">
+            <div class="thumb-wrap">
+              <img class="thumb" src="/Image_Miyu/Miyu3_KimChaeYeon.png" alt="Miyu thumbnail" loading="lazy" />
+            </div>
+            <div class="card-title">Miyu</div>
+          </button>
+
+          <button class="grid-card" data-open="Wriothesley" aria-label="Open Wriothesley">
+            <div class="thumb-wrap">
+              <img class="thumb" src="/Image_Wriothesley/Wriothesley3_KimChaeYeon.png" alt="Wriothesley thumbnail" loading="lazy" />
+            </div>
+            <div class="card-title">Wriothesley</div>
+          </button>
+
+          <button class="grid-card" data-open="PostDochi" aria-label="Open PostDochi">
+            <div class="thumb-wrap">
+              <img class="thumb" data-src-base="/Image_PostDochi/PostDochi_T" alt="PostDochi thumbnail" loading="lazy" />
+            </div>
+            <div class="card-title">PostDochi</div>
+          </button>
+
+          <button class="grid-card" data-open="Axe" aria-label="Open Axe">
+            <div class="thumb-wrap">
+              <img class="thumb" src="/Image_Axe/Axe_KimChaeYeon.gif" alt="Axe thumbnail" loading="lazy" />
+            </div>
+            <div class="card-title">Axe</div>
+          </button>
+
+          <button class="grid-card" data-open="DivingDeeper" aria-label="Open Diving Deeper">
+            <div class="thumb-wrap">
+              <!-- 확장자 포함: 바로 사용 -->
+              <img class="thumb" src="/Image_DivingDeeper/Divingdeeper_KimChaeYeon_Th.png" alt="Diving Deeper thumbnail" loading="lazy" />
+            </div>
+            <div class="card-title">Diving Deeper</div>
+          </button>
+
+          <button class="grid-card" data-open="Skull" aria-label="Open Skull">
+            <div class="thumb-wrap">
+              <img class="thumb" data-src-base="/Image_Skull/Skull_KimChaeYeon1" alt="Skull thumbnail" loading="lazy" />
+            </div>
+            <div class="card-title">Skull Study</div>
+          </button>
+        </div>
+      </section>
+
+      <!-- Project Saki -->
+      <section id="Saki" class="mt-10" data-project>
+        <button class="back-btn" data-back>← Back to WORK</button>
+        <h2 class="section-title">Saki</h2>
+        <img class="project-img fade-img" src="/Image_Saki/Saki3_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Saki/Saki2_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Saki/Saki_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Saki/SakiWire_A_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Saki/SakiWire_P_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Saki/SakiWire_Face_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Saki/Saki_Maps_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Saki/Saki_Unity_KimChaeYeon.png" alt="">
+      </section>
+
+      <!-- Project Miyu -->
+      <section id="miyu" class="mt-10" data-project>
+        <button class="back-btn" data-back>← Back to WORK</button>
+        <h2 class="section-title">Miyu</h2>
+        <img class="project-img fade-img" src="/Image_Miyu/Miyu3_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Miyu/Miyu2_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Miyu/Miyu4.png" alt="">
+        <img class="project-img fade-img" src="/Image_Miyu/Miyu_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Miyu/MiyuWire_A_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Miyu/MiyuWire_P_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Miyu/MiyuWire_Face_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Miyu/Miyu_Maps_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Miyu/Miyu_Unity_KimChaeYeon.png" alt="">
+      </section>
+
+      <!-- Project Wriothesley -->
+      <section id="Wriothesley" class="mt-10" data-project>
+        <button class="back-btn" data-back>← Back to WORK</button>
+        <h2 class="section-title">Wriothesley</h2>
+        <img class="project-img fade-img" src="/Image_Wriothesley/Wriothesley3_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Wriothesley/Wriothesley2_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Wriothesley/Wriothesley_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Wriothesley/WriothesleyWire_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Wriothesley/Wriothesley_Maps_KimChaeYeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Wriothesley/Wriothesley_Unity_KimChaeYeon.png" alt="">
+      </section>
+
+      <!-- Project PostDochi -->
+      <section id="PostDochi" class="mt-10" data-project>
+        <button class="back-btn" data-back>← Back to WORK</button>
+        <h2 class="section-title">Post Dochi</h2>
+        <img class="project-img fade-img" data-src-base="/Image_PostDochi/PostDochi1" alt="">
+        <img class="project-img fade-img" data-src-base="/Image_PostDochi/PostDochi2" alt="">
+        <img class="project-img fade-img" data-src-base="/Image_PostDochi/PostDochi3" alt="">
+        <img class="project-img fade-img" data-src-base="/Image_PostDochi/PostDochi4" alt="">
+        <img class="project-img fade-img" data-src-base="/Image_PostDochi/PostDochi5" alt="">
+        <img class="project-img fade-img" data-src-base="/Image_PostDochi/PostDochi6" alt="">
+        <img class="project-img fade-img" data-src-base="/Image_PostDochi/PostDochi7" alt="">
+        <img class="project-img fade-img" data-src-base="/Image_PostDochi/PostDochi8" alt="">
+        <img class="project-img fade-img" data-src-base="/Image_PostDochi/PostDochi9" alt="">
+        <img class="project-img fade-img" data-src-base="/Image_PostDochi/PostDochi10" alt="">
+        <img class="project-img fade-img" data-src-base="/Image_PostDochi/PostDochi11" alt="">
+        <img class="project-img fade-img" data-src-base="/Image_PostDochi/PostDochi12" alt="">
+      </section>
+
+      <!-- Project Axe -->
+      <section id="Axe" class="mt-10" data-project>
+        <button class="back-btn" data-back>← Back to WORK</button>
+        <h2 class="section-title">Axe</h2>
+        <img class="project-img fade-img" src="/Image_Axe/Axe_KimChaeYeon.gif" alt="">
+        <img class="project-img fade-img" src="/Image_Axe/Chaeyeon.png" alt="">
+        <img class="project-img fade-img" src="/Image_Axe/AxeWire_KimChaeYeon.png" alt="">
+      </section>
+
+      <!-- Project Diving Deeper -->
+      <section id="DivingDeeper" class="mt-10" data-project>
+        <button class="back-btn" data-back>← Back to WORK</button>
+        <h2 class="section-title">Diving Deeper</h2>
+        <img class="project-img fade-img" src="/Image_DivingDeeper/Divingdeeper_KimChaeYeon_main.png" alt="">
+        <img class="project-img fade-img" src="/Image_DivingDeeper/Divingdeeper_KimChaeYeon.jpg" alt="">
+        <img class="project-img fade-img" src="/Image_DivingDeeper/Divingdeeper2_KimChaeYeon.jpg" alt="">
+        <img class="project-img fade-img" src="/Image_DivingDeeper/Divingdeeper3_KimChaeYeon.jpg" alt="">
+        <img class="project-img fade-img" src="/Image_DivingDeeper/Divingdeeper_Wire_KimChaeYeon.jpg" alt="">
+        <img class="project-img fade-img" src="/Image_DivingDeeper/Divingdeeper_ZBrush_KimChaeYeon.jpg" alt="">
+        <img class="project-img fade-img" src="/Image_DivingDeeper/Divingdeeper_pre_KimChaeYeon.jpg" alt="">
+      </section>
+
+      <!-- Project Skull -->
+      <section id="Skull" class="mt-10" data-project>
+        <button class="back-btn" data-back>← Back to WORK</button>
+        <h2 class="section-title">Skull</h2>
+        <img class="project-img fade-img" data-src-base="/Image_Skull/Skull_KimChaeYeon1" alt="">
+        <img class="project-img fade-img" data-src-base="/Image_Skull/Skull_KimChaeYeon2" alt="">
+        <img class="project-img fade-img" data-src-base="/Image_Skull/Skull_KimChaeYeon3" alt="">
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // 페이드인
+    document.querySelectorAll('img.fade-img').forEach(img=>{
+      if(img.complete) img.classList.add('loaded');
+      img.addEventListener('load', ()=> img.classList.add('loaded'));
+    });
+
+   
+    (function(){
+      const EXT_RX=/\.(png|jpe?g|gif|webp)$/i;
+      const CANDIDATES=['.png','.jpg','.jpeg','.gif','.webp','.PNG','.JPG','.JPEG','.GIF','.WEBP'];
+      const PLACEHOLDER='/logo/poit4poit.png';
+
+      function preload(url){
+        return new Promise((res,rej)=>{
+          const im=new Image();
+          im.onload=()=>res(url);
+          im.onerror=()=>rej(url);
+          im.src=url;
+        });
+      }
+
+      async function resolveOne(img){
+        const raw=img.getAttribute('data-src-base');
+        if(!raw) return;
+        let base=raw.startsWith('/')?raw:'/'+raw;
+
+        if(EXT_RX.test(base)){
+          const url=encodeURI(base);
+          try{ await preload(url); img.src=url; img.removeAttribute('data-src-base'); return; }catch(_){}
+        }
+        for(const ext of CANDIDATES){
+          const url=encodeURI(base+ext);
+          try{ await preload(url); img.src=url; img.removeAttribute('data-src-base'); return; }catch(_){}
+        }
+        console.warn('이미지 로드 실패:', base);
+        img.src=PLACEHOLDER;
+        img.removeAttribute('data-src-base');
+      }
+
+      let io=null;
+      if('IntersectionObserver' in window){
+        io=new IntersectionObserver((entries,obs)=>{
+          entries.forEach(entry=>{
+            if(entry.isIntersecting){
+              resolveOne(entry.target);
+              obs.unobserve(entry.target);
+            }
+          });
+        },{rootMargin:'200px 0px'});
+      }
+
+      document.querySelectorAll('img[data-src-base]').forEach(img=>{
+        if(io) io.observe(img); else resolveOne(img);
+      });
+
+      window.__retryPendingImages=function(){
+        document.querySelectorAll('img[data-src-base]').forEach(img=>{
+          if(!io) resolveOne(img);
+        });
+      };
+    })();
+
+    // View switcher
+    const projects=document.querySelectorAll('[data-project]');
+    const work=document.getElementById('work');
+
+    function showView(view){
+      if(!view||view==='work'){
+        projects.forEach(sec=>sec.style.display='none');
+        work.style.display='block';
+      }else{
+        work.style.display='none';
+        projects.forEach(sec=>sec.style.display='none');
+        const target=document.getElementById(view);
+        if(target){target.style.display='block';} else {work.style.display='block';}
+      }
+      window.scrollTo({top:0,behavior:'smooth'});
+      if(window.__retryPendingImages) window.__retryPendingImages();
+    }
+
+    function navigateTo(view,{replace=false}={}){
+      const baseURL=location.pathname+location.search;
+      if(!view||view==='work'){
+        if(replace) history.replaceState({view:'work'},'',baseURL);
+        else history.pushState({view:'work'},'',baseURL);
+        showView('work'); return;
+      }
+      const hash='#'+view;
+      if(replace) history.replaceState({view},'',hash);
+      else history.pushState({view},'',hash);
+      showView(view);
+    }
+
+    const hasHash=!!location.hash;
+    const initialView=(location.hash||'#work').replace('#','');
+    if(hasHash){ navigateTo(initialView,{replace:true}); }
+    else { history.replaceState({view:'work'},'',location.pathname+location.search); showView('work'); }
+
+    window.addEventListener('popstate',e=>{
+      const viewFromState=e.state?.view;
+      const viewFromHash=(location.hash||'').replace('#','');
+      showView(viewFromState ?? (viewFromHash || 'work'));
+    });
+
+    document.addEventListener('click',e=>{
+      const openBtn=e.target.closest('[data-open]');
+      const backBtn=e.target.closest('[data-back]');
+      const navLink=e.target.closest('[data-nav]');
+      if(openBtn){const id=openBtn.dataset.open;if(id){navigateTo(id);} return;}
+      if(backBtn){navigateTo('work'); return;}
+      if(navLink){
+        e.preventDefault();
+        const id=navLink.dataset.nav;
+        if(!id||id==='work') navigateTo('work'); else navigateTo(id);
+        closeMobileMenu(); return;
+      }
+    });
+
+    const hamburger=document.getElementById('hamburger');
+    const mobileMenu=document.getElementById('mobileMenu');
+    function openMobileMenu(){ if(!mobileMenu) return; mobileMenu.style.display='block'; mobileMenu.setAttribute('aria-hidden','false'); if(hamburger) hamburger.setAttribute('aria-expanded','true'); document.body.style.overflow='hidden'; }
+    function closeMobileMenu(){ if(!mobileMenu) return; mobileMenu.style.display='none'; mobileMenu.setAttribute('aria-hidden','true'); if(hamburger) hamburger.setAttribute('aria-expanded','false'); document.body.style.overflow=''; }
+    if(hamburger){ hamburger.addEventListener('click',()=>{ if(!mobileMenu) return; const isOpen=mobileMenu.style.display==='block'; if(isOpen) closeMobileMenu(); else openMobileMenu(); }); }
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeMobileMenu(); });
+    mobileMenu?.addEventListener('click',e=>{ const inner=e.target.closest('.mm-inner'); if(!inner) closeMobileMenu(); });
+  </script>
+</body>
+</html>
+index.html
+25KB
